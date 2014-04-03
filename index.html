@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+    <title>My App!</title>
+    <style>
+        body{margin:0px; overflow:hidden;}
+
+        main{position:relative;}
+        main>*{position:absolute; top:0px; left:0px;}
+        #image{display:none;}
+        video{z-index:-1}
+
+        /* temporary */
+        #image{display:block !important; left:640px !important;}
+        #snap{padding-top:500px;}
+    </style>
+</head>
+<body>
+    <main>
+        <canvas id="image" width="640" height="480"></canvas>
+        <canvas id="fg" width="640" height="480"></canvas>
+        <video width="640" height="480"></video>
+    </main>
+    <script src="main.js"></script>
+</body>
+</html>
