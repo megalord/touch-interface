@@ -3,13 +3,17 @@ var crop = require('./modules/crop'),
     imp = require('./modules/imp'),
     map = require('./modules/map'),
 
-    fgContext = document.getElementById('fg').getContext('2d'),
     imageContext = document.getElementById('image').getContext('2d'),
+    layoutContext = document.getElementById('layout').getContext('2d'),
+    trackerContext = document.getElementById('tracker').getContext('2d'),
     video = document.getElementsByTagName('video')[0],
 
-    width = 640,
-    height = 480,
+    x = 60,
+    y = 230,
+    w = 520,
+    h = 230,
 
+    snapElement = document.getElementById('snap'),
     snapInterval,
 
 drawCircle = function(context, x, y, r) {
@@ -34,36 +38,45 @@ init = function() {
 
 snap = function() {
     console.time('total');
-    if(crop.startX === 0) return;
-    imageContext.drawImage(video, 0, 0, width, height);
+    imageContext.drawImage(video, x, y, w, h, 0, 0, w, h);
 
     var center, outputData,
-        inputData = imageContext.getImageData(crop.startX, crop.startY, crop.width, crop.height),
-        input = inputData.data;
+        imageData = imageContext.getImageData(0, 0, w, h);
 
     console.time('thresh');
-    imp.threshold(input);
+    imp.threshold(imageData.data);
     console.timeEnd('thresh');
 
     console.time('erode');
-    outputData = imp.erode(inputData, 7, fgContext);
+    imp.erode(imageData, 7);
     console.timeEnd('erode');
 
+    // Temporarily display video snapshot post-processing.
+    imageContext.clearRect(0, 0, w, h);
+    imageContext.putImageData(imageData, x, y);
+
     console.time('center');
-    center = imp.center(outputData);
+    center = imp.center(imageData);
     console.timeEnd('center');
 
-    // Temporarily display video snapshot post-processing.
-    imageContext.clearRect(0, 0, width, height);
-    imageContext.putImageData(outputData, crop.startX, crop.startY);
+    // Draw the tracker.
+    trackerContext.clearRect(0, 0, w, h);
+    if(center !== null) {
+        drawCircle(trackerContext, center.x, center.y, 5);
 
-    // Draw the center dot, and redraw the crop square.
-    fgContext.clearRect(0, 0, width, height);
-    fgContext.strokeRect(crop.startX, crop.startY, crop.width, crop.height);
-    if(center !== null)
-        drawCircle(fgContext, crop.startX + center.x, crop.startY + center.y, 5);
+        // Flip the y coordinate so that the origin is at the bottom left.
+        center.y = h - center.y;
+    };
 
-    map(center);
+    // Temporary measure for determining layout.
+    snapElement.textContent = center === null ? 'none' : center.x + ', ' + center.y;
+
+
+    // Map the coordinates and perform an action.
+    // Redraw the layout if the mode is changed.
+    map(center, layoutContext);
+
+    // 50-85 ms
     console.timeEnd('total');
 },
 
@@ -78,20 +91,36 @@ startVideo = function(sourceId) {
             video.src = window.webkitURL.createObjectURL(stream);
             video.play();
 
-            crop.init(fgContext, function() {
-                clearInterval(snapInterval);
-            }, function() {
-                snapInterval = setInterval(snap, 200);
-            });
+            //snap();
+            snapInterval = setInterval(snap, 120);
         }
     );
 };
 
-console.time = function() {};
-console.timeEnd = function() {};
+// Overwrite console functions to prevent logging (performance hit).
+/*console.time = function() {};
+console.timeEnd = function() {};*/
 
-fgContext.fillStyle = 'green';
-fgContext.lineWidth = '5px';
-fgContext.strokeStyle = 'rgb(255,255,255)';
+// Configure the contexts.
+imageContext.translate(w, 0);
+imageContext.scale(-1, 1);
+
+layoutContext.canvas.style.left = x + 'px';
+layoutContext.canvas.style.top = y + 'px';
+layoutContext.canvas.width = w;
+layoutContext.canvas.height = h;
+
+trackerContext.canvas.style.left = x + 'px';
+trackerContext.canvas.style.top = y + 'px';
+trackerContext.canvas.width = w;
+trackerContext.canvas.height = h;
+
+layoutContext.lineWidth = '5px';
+layoutContext.strokeStyle = 'rgb(255,255,255)';
+
+trackerContext.fillStyle = 'green';
+
+// Set the mode to the mouse.
+map({x:0, y:0}, layoutContext);
 
 init();

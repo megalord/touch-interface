@@ -12,8 +12,14 @@ execute = function() {
 
 module.exports = {
 
-    click:function() {
-        execute('click', 1);
+    click:function(button) {
+        if(button === 'left')
+            code = 1;
+        else if(button === 'right')
+            code = 3
+        else return;
+
+        execute('click', code);
     },
 
     key:function(key) {
@@ -22,6 +28,12 @@ module.exports = {
 
     mousemove:function(x, y) {
         execute('mousemove_relative', '--', x, y);
+    },
+
+    scroll:function(yDiff) {
+        if(yDiff === 0) return;
+
+        execute('click', yDiff > 0 ? 4 : 5);
     }
 
 };

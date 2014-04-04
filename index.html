@@ -8,7 +8,7 @@
         main{position:relative;}
         main>*{position:absolute; top:0px; left:0px;}
         #image{display:none;}
-        video{z-index:-1}
+        video{z-index:-1; -webkit-transform:scaleX(-1);}
 
         /* temporary */
         #image{display:block !important; left:640px !important;}
@@ -18,9 +18,11 @@
 <body>
     <main>
         <canvas id="image" width="640" height="480"></canvas>
-        <canvas id="fg" width="640" height="480"></canvas>
+        <canvas id="layout"></canvas>
+        <canvas id="tracker"></canvas>
         <video width="640" height="480"></video>
     </main>
+    <div id="snap"></div>
     <script src="main.js"></script>
 </body>
 </html>

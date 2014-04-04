@@ -23,14 +23,15 @@ module.exports = {
         };
     },
 
-    erode:function(inputData, dim, context) {
+    erode:function(imageData, dim) {
         var match, offset, s,
             half = (dim-1)/2,
-            height = inputData.height,
-            input = inputData.data,
-            outputData = context.createImageData(inputData),
-            output = outputData.data,
-            width = inputData.width,
+
+            width = imageData.width,
+            height = imageData.height,
+
+            output = imageData.data,
+            input = Array.prototype.slice.call(output),
         
         isEdge = function(i) {
             var x = i / 4 % width,
@@ -66,8 +67,6 @@ module.exports = {
             output[i+2] = s;
             output[i+3] = 255;
         };
-
-        return outputData;
     },
 
     threshold:function(pixels) {
