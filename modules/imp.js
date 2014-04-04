@@ -23,15 +23,19 @@ module.exports = {
         };
     },
 
-    erode:function(imageData, dim) {
+    erode:function(inputData, dim, context) {
         var match, offset, s,
             half = (dim-1)/2,
 
-            width = imageData.width,
-            height = imageData.height,
+            width = inputData.width,
+            height = inputData.height,
 
-            output = imageData.data,
-            input = Array.prototype.slice.call(output),
+            // A 2d context is passed in and used to create image data because
+            // this alternative is ~5x more performant than using [].slice()
+            // to copy the input pixel array and modify the original in place (returning nothing).
+            input = inputData.data,
+            outputData = context.createImageData(inputData),
+            output = outputData.data,
         
         isEdge = function(i) {
             var x = i / 4 % width,
@@ -67,12 +71,14 @@ module.exports = {
             output[i+2] = s;
             output[i+3] = 255;
         };
+
+        return outputData;
     },
 
     threshold:function(pixels) {
         var s;
         for(var i = 0; i < pixels.length; i+=4) {
-            s = (pixels[i] + pixels[i+1] + pixels[i+2] === 765) ? 255 : 0;
+            s = (pixels[i] === 255 && pixels[i+1] === 255 && pixels[i+2] === 255) ? 255 : 0;
             pixels[i] = s;
             pixels[i+1] = s;
             pixels[i+2] = s;

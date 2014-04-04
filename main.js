@@ -41,22 +41,22 @@ snap = function() {
     imageContext.drawImage(video, x, y, w, h, 0, 0, w, h);
 
     var center, outputData,
-        imageData = imageContext.getImageData(0, 0, w, h);
+        inputData = imageContext.getImageData(0, 0, w, h);
 
     console.time('thresh');
-    imp.threshold(imageData.data);
+    imp.threshold(inputData.data);
     console.timeEnd('thresh');
 
     console.time('erode');
-    imp.erode(imageData, 7);
+    outputData = imp.erode(inputData, 7, imageContext);
     console.timeEnd('erode');
 
     // Temporarily display video snapshot post-processing.
     imageContext.clearRect(0, 0, w, h);
-    imageContext.putImageData(imageData, x, y);
+    imageContext.putImageData(outputData, x, y);
 
     console.time('center');
-    center = imp.center(imageData);
+    center = imp.center(outputData);
     console.timeEnd('center');
 
     // Draw the tracker.
@@ -92,7 +92,7 @@ startVideo = function(sourceId) {
             video.play();
 
             //snap();
-            snapInterval = setInterval(snap, 120);
+            snapInterval = setInterval(snap, 2000);
         }
     );
 };
